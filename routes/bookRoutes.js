@@ -1,9 +1,79 @@
-Use express.Router() to create a new router instance.
-Implement the five core CRUD endpoints on this router:
-Create: POST / - Creates a new book using the data in req.body.
-Read All: GET / - Retrieves all books from the database.
-Read One: GET /:id - Retrieves a single book by its _id.
-Update: PUT /:id - Updates a book by its _id using the data in req.body.
-Delete: DELETE /:id - Deletes a book by its _id.
-Use async/await and try...catch blocks in all routes to handle errors.
-Export the router.
+import express from 'express';
+import Book from '../models/Book.js';
+
+const router = express.Router();
+
+// CREATE 
+router.post("/", async (req, res) => {
+  try {
+    const newBook = new Book(req.body);
+    const savedBook = await newBook.save();
+    res.status(201).json(savedBook);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// READ 
+router.get("/", async (req, res) => {
+  try {
+    const books = await Book.find();
+    res.json(books);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// READ ONE - GET /:id
+router.get("/:id", async (req, res) => {
+  try {
+    const book = await Book.findById(req.params.id);
+
+    if (!book) {
+      return res.status(404).json({ error: "Book not found" });
+    }
+
+    res.json(book);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// UPDATE 
+router.put("/:id", async (req, res) => {
+  try {
+    const updatedBook = await Book.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+
+    if (!updatedBook) {
+      return res.status(404).json({ error: "Book not found" });
+    }
+
+    res.json(updatedBook);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// DELETE 
+router.delete("/:id", async (req, res) => {
+  try {
+    const deletedBook = await Book.findByIdAndDelete(req.params.id);
+
+    if (!deletedBook) {
+      return res.status(404).json({ error: "Book not found" });
+    }
+
+    res.json({ message: "Book deleted successfully", deletedBook });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+export default router;

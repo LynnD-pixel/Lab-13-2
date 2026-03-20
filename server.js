@@ -1,5 +1,22 @@
-server.js
-Set up your Express application.
-Use the express.json() middleware to parse request bodies.
-Mount your book router at a base path, like /api/books.
-Start the server on a specified port.
+import "dotenv/config";
+import express from 'express'
+import connectDB from "./db/connection.js";
+import bookRoutes from "./routes/bookRoutes.js"
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Connect to database
+connectDB();
+// Middleware
+app.use(express.json());
+// Routes
+app.use("/api/books", bookRoutes);
+// Basic test route
+app.get("/", (req, res) => {
+  res.send("Digital Bookshelf API is running");
+});
+// Start server
+app.listen(PORT, () => {
+  console.log("Server is running on port:" + PORT);
+});
